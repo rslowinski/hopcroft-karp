@@ -1,0 +1,18 @@
+example:
+input:
+3 4
+4 3 4 1 2
+1 4
+1 4
+output:
+2
+
+
+description:
+input:
+3 4         <== respectively left and right partition(i.e digit 3 means there are 3 vertexes on left partition) 
+4 3 4 1 2   <== first number means amount of potential matches for first vertex and next numbers represent vertexes from right partition
+1 4         <== same as above i.e 1.potential match with vertex '4'
+1 4         <== the same
+output:
+2           <== maximum number of matches
