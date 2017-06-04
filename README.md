@@ -17,4 +17,4 @@ input:
 1 4         <== same as above i.e 1.potential match with vertex '4'
 1 4         <== the same
 output:
-2           <== maximum number of matches 
+2           <== maximum number of matches
