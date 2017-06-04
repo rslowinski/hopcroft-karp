@@ -3,213 +3,161 @@
 #include <iostream>
 #define NIL 0
 #define INF INT_MAX
+#define QUEUE_SIZE 5000
 #include <cstdio>
- 
- 
-struct Node
+
+
+class Queue
 {
-        int key;
-        Node *next, *previous;
-};
- 
-class List
-{
+	int *queue;
+	int size;
+	int first;
+	int last;
 public:
-        Node *first, *last;
-        int amount;
- 
-        List()
-        {
-                first = last = nullptr;
-                amount = 0;
-        }
- 
-        ~List()
-        {
-                while (amount) popFront();
-        }
- 
-        bool empty()
-        {
-                return amount == 0;
-        }
- 
-        void pushFront(int k)
-        {
-                Node* tmp = new Node;
-                tmp->key = k;
-                tmp->previous = nullptr;
-                tmp->next = first;
-                first = tmp;
-                amount++;
-                if (tmp->next) tmp->next->previous = tmp;
-                else last = tmp;
-        }
- 
-        void pushBack(int k)
-        {
-                Node* tmp = new Node;
-                tmp->key = k;
-                tmp->next = nullptr;
-                tmp->previous = last;
-                last = tmp;
-                amount++;
-                if (tmp->previous) tmp->previous->next = tmp;
-                else first = tmp;
-        }
- 
-        void remove(Node* node)
-        {
- 
-                        amount--;
-                        if (node->previous)
-                                node->previous->next = node->next;
-                        else
-                                first = node->next;
-                        if (node->next)
-                                node->next->previous = node->previous;
-                        else
-                                last = node->previous;
-                        delete node;
-                
-        }
- 
-        void popFront()
-        {
-                if (amount)
-                        remove(first);
-        }
- 
-        void popBack()
-        {
-                if (amount)
-                        remove(last);
-        }
- 
-        int getFirst()
-        {
-                return first->key;
-        }
- 
-        int getLast()
-        {
-                return last->key;
-        }
- 
-        int* getAll()
-        {
-                int* keys = new int[amount];
-                Node* tmp = first;
-                for (int i = 0; i < amount; i++)
-                {
-                        keys[i] = tmp->key;
-                        tmp = tmp->next;
-                }
-                return keys;
-        }
+	Queue()
+	{
+		queue = new int[QUEUE_SIZE];
+		first = 0;
+		size = 0;
+		last = 0;
+	}
+	void pushBack(int k)
+	{
+		queue[last] = k;
+		last = (last + 1) % QUEUE_SIZE;
+		size++;
+	}
+	void popFront()
+	{
+		if(size!=0)
+		{
+			first = (first + 1) % QUEUE_SIZE;
+			size--;
+		}
+	}
+	bool empty()
+	{
+		return size == 0;
+	}
+	int getFirst()
+	{
+		return queue[first];
+	}
+	void clear()
+	{
+		last = 0;
+		first = 0;
+		size = 0;
+	}
+	~Queue()
+	{
+		delete[] queue;
+	}
 };
- 
-inline bool dfs(int l, List* adj, int* dist, int* pairU, int* pairV);
- 
+inline bool dfs(int l, int** adj, int* dist, int* pairU, int* pairV);
+
 int main()
 {
-        int m, n, i, q, value;
-        scanf("%d %d", &m, &n);
-        List* adj = new List[m + 1];
-        for (i = 1; i <= m; i++)
-        {
-                scanf("%d", &q);
-                for (int j = 1; j <= q; j++)
-                {
-                        scanf("%d", &value);
-                        adj[i].pushBack(value);
-                }
-        }
-        int *pairL = new int[m + 1];
-        int *pairR = new int[n + 1];
-        int *pathSize = new int[m + 1];
- 
-        for (i = 0; i <= m; i++)
-                pairL[i] = NIL;
-        for (i = 0; i <= n; i++)
-                pairR[i] = NIL;
-        int matchings = 0;
-        while (true)
-        {
-                List* queue = new List;
-                for (i = 1; i <= m; i++)
-                {
-                        if (pairL[i] == NIL)
-                        {
-                                pathSize[i] = 0;
-                                queue->pushBack(i);
-                        }
-                        else
-                                pathSize[i] = INF;
-                }
-                pathSize[NIL] = INF;
-                while (queue->empty() == false)
-                {
-                        q = queue->getFirst();
-                        queue->popFront();
- 
-                        if (pathSize[q] < pathSize[NIL])
-                        {
-                                int size = adj[q].amount;
-                                int* nodes = adj[q].getAll();
-                                for (i = 0; i < size; i++)
-                                {
-                                        int val = nodes[i];
-                                        if (pathSize[pairR[val]] == INF)
-                                        {
-                                                pathSize[pairR[val]] = pathSize[q] + 1;
-                                                queue->pushBack(pairR[val]);
-                                        }
-                                }
-                        }
-                }
-                if (pathSize[NIL] == INF)
-                        break;
- 
-                for (i = 1; i <= m; i++)
-                {
-                        if (pairL[i] == NIL && dfs(i, adj, pathSize, pairL, pairR))
-                                matchings++;
-                }
-        }
- 
-        std::cout << matchings;
-        //getchar();
-        //getchar();
-        delete [] pairL;
-        delete [] pairR;
-        delete [] pathSize;
-        delete[]adj;
-        return 0;
+	int left, right, i, q, value, j;
+	scanf("%d %d", &left, &right);
+	int **adj = new int*[left + 1];
+	for (i = 1; i <= left; i++)
+	{
+		scanf("%d", &q);
+		adj[i] = new int[q + 2];
+		adj[i][0] = q;
+		for (j = 1; j <= q; j++)
+		{
+			scanf("%d", &value);
+			adj[i][j] = value;
+		}adj[i][j] = -1;
+	}
+	int *pairL = new int[left + 1];
+	int *pairR = new int[right + 1];
+	int *pathSize = new int[left + 1];
+
+	for (i = 0; i <= left; i++)
+		pairL[i] = NIL;
+	for (i = 0; i <= right; i++)
+		pairR[i] = NIL;
+	register unsigned int matchings = 0;
+	Queue queue;
+	while (true)
+	{
+		queue.clear();
+		for (i = 1; i <= left; i++)
+		{
+			if (pairL[i] == NIL)
+			{
+				pathSize[i] = 0;
+				queue.pushBack(i);
+			}
+			else
+				pathSize[i] = INF;
+		}
+		pathSize[NIL] = INF;
+		while (queue.empty() == false)
+		{
+			q = queue.getFirst();
+			queue.popFront();
+
+			if (pathSize[q] < pathSize[NIL])
+			{
+				for (i = 1; adj[q][i] != -1; i++)
+				{
+					if (pathSize[pairR[adj[q][i]]] == INF)
+					{
+						pathSize[pairR[adj[q][i]]] = pathSize[q] + 1;
+						queue.pushBack(pairR[adj[q][i]]);
+					}
+				}
+
+			}
+		}
+		if (pathSize[NIL] == INF)
+			break;
+
+		for (i = 1; i <= left; i++)
+		{
+			if (pairL[i] == NIL && dfs(i, adj, pathSize, pairL, pairR))
+				matchings++;
+		}
+	}
+
+	std::cout << matchings;
+	//getchar();
+	//getchar();
+
+	delete [] pairL;
+	delete [] pairR;
+	delete[] pathSize;
+	for (i = 1; i <= left; i++)
+	{
+		delete[]adj[i];
+	}
+	delete[]adj;
+	return 0;
 }
- 
-inline bool dfs(int l, List* adj, int* dist, int* pairU, int* pairV)
+
+inline bool dfs(int l, int** adj, int* dist, int* pairU, int* pairV)
 {
-        if (l != NIL)
-        {
-                int size = adj[l].amount;
-                int* nodes = adj[l].getAll();
-                for (int q = 0; q < size; q++)
-                {
-                        int val = nodes[q];
-                        if (dist[pairV[val]] == dist[l] + 1)
-                        {
-                                if (dfs(pairV[val], adj, dist, pairU, pairV) == true)
-                                {
-                                        pairV[val] = l;
-                                        pairU[l] = val;
-                                        return true;
-                                }
-                        }
-                }
-                dist[l] = INF;
-                return false;
-        }
-        return true;
+	if (l != NIL)
+	{
+		for (int q = 1; adj[l][q] != -1; q++)
+		{
+			if (dist[pairV[adj[l][q]]] == dist[l] + 1)
+			{
+				if (dfs(pairV[adj[l][q]], adj, dist, pairU, pairV) == true)
+				{
+					pairV[adj[l][q]] = l;
+					pairU[l] = adj[l][q];
+					return true;
+				}
+			}
+		}
+
+		dist[l] = INF;
+		return false;
+	}
+	return true;
 }
- 
